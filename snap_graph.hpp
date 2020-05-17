@@ -8,9 +8,9 @@
 #include <unordered_map>
 #include <vector>
 
-namespace bk {
+#include "observer_ptr.hpp"
 
-template <class T> using observer_ptr = T*;
+namespace bk {
 
 class UndirectedGraph {
  public:
@@ -46,11 +46,11 @@ class UndirectedGraph {
 
   observer_ptr<const std::vector<Node>> connections(Node n) const {
     auto it = nodes_to_edges_.find(n);
-    if (it == nodes_to_edges_.end()) {
-      return nullptr;
-    } else {
-      return &it->second;
+    observer_ptr<const std::vector<Node>> p;
+    if (it != nodes_to_edges_.end()) {
+      p.reset(&it->second);
     }
+    return p;
   }
 
  private:

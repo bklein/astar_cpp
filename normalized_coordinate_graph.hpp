@@ -9,11 +9,9 @@
 #include <unordered_map>
 #include <vector>
 
-namespace bk {
+#include "observer_ptr.hpp"
 
-template <class T> using observer_ptr = T*;
-
-namespace normalized_coordinate {
+namespace bk::normalized_coordinate {
 
 using NodeId = int64_t;
 
@@ -210,5 +208,4 @@ PathDistances ComputePathDistances(const Graph& graph, const std::vector<NodeId>
   return PathDistances{euclidean, topological};
 }
 
-}  // namespace normalized_coordinate
-}  // namespace bk
+}  // namespace bk::normalized_coordinate
