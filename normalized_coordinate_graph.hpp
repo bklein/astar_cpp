@@ -16,14 +16,14 @@ namespace bk::normalized_coordinate {
 using NodeId = int64_t;
 
 struct NodeEdge {
-  explicit NodeEdge(double cannonical_l2_cost)
-    : cannonical_l2_cost(cannonical_l2_cost) {}
+  explicit NodeEdge(double cannonical_l2_cost_)
+    : cannonical_l2_cost(cannonical_l2_cost_) {}
   const double cannonical_l2_cost;
 };
 
 struct Node {
-  Node(double x, double y)
-    : x(x), y(y), edges() {}
+  Node(double x_, double y_)
+    : x(x_), y(y_), edges() {}
   double x;
   double y;
   std::unordered_map<NodeId, NodeEdge> edges;
