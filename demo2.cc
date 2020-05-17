@@ -33,7 +33,6 @@ int main(int argc, char** argv) {
     << graph.num_edges() << " edges"
     << std::endl;
 
-#if 1
   const auto node_ids = graph.node_ids();
   RandomUniformGenerator<std::size_t> rand(0, node_ids.size() - 1);
 
@@ -47,27 +46,15 @@ int main(int argc, char** argv) {
 
   auto h =
     [&graph, goal_id] (NodeId id) -> double {
-      const auto current_node = graph.node(id).value();
-      const auto goal_node = graph.node(goal_id).value();
-      const double delta_x = current_node.x - goal_node.x;
-      const double delta_y = current_node.y - goal_node.y;
-      const double distance = delta_x * delta_x + delta_y * delta_y;
-      return distance;
+      const auto current_node = graph.node(id);
+      const auto goal_node = graph.node(goal_id);
+      return L2SquareDistance(current_node, goal_node);
     };
 
   auto edge_cost =
     [&graph] (NodeId a, NodeId b) -> double {
-      const auto edges = graph.node(a).value().edges;
-      auto it = std::find_if(
-          edges.begin(), edges.end(),
-          [b] (const auto& edge) {
-            return edge.id == b;
-          });
-      if (it == edges.end()) {
-        std::cerr << "Data is inconsistent" << std::endl;
-        std::exit(EXIT_FAILURE);
-      }
-      return it->cannonical_l2_cost;
+      const auto& edge = graph.node(a).edges.at(b);
+      return edge.cannonical_l2_cost;
     };
 
   std::cout << "start: " << start_id << std::endl;
@@ -88,18 +75,16 @@ int main(int argc, char** argv) {
     const auto& path = *maybe_path;
     if (!VerifyPath(graph, path)) {
       std::cerr << "Path failed verification" << std::endl;
+      return EXIT_FAILURE;
     }
     std::cout << "path, length = " << path.size() << std::endl;
-    constexpr bool verbose = false;
-    if (verbose) {
-      for (const auto& node : path) {
-        std::cout << node << std::endl;
-      }
-    }
+    const auto distances = ComputePathDistances(graph, path);
+    std::cout << "  euclidean dist: " << distances.euclidean << std::endl;
+    std::cout << "topological dist: " << distances.topological << std::endl;
   } else {
     std::cerr << "AStar failed to find path" << std::endl;
+    return EXIT_FAILURE;
   }
-#endif
 
   return EXIT_SUCCESS;
 }

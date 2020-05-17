@@ -21,10 +21,9 @@ namespace normalized_coordinate {
 using NodeId = int64_t;
 
 struct NodeEdge {
-  NodeEdge(NodeId id, double cannonical_l2_cost)
-    : id(id), cannonical_l2_cost(cannonical_l2_cost) {}
-  NodeId id;
-  double cannonical_l2_cost;
+  explicit NodeEdge(double cannonical_l2_cost)
+    : cannonical_l2_cost(cannonical_l2_cost) {}
+  const double cannonical_l2_cost;
 };
 
 struct Node {
@@ -32,8 +31,15 @@ struct Node {
     : x(x), y(y), edges() {}
   double x;
   double y;
-  std::vector<NodeEdge> edges;
+  std::unordered_map<NodeId, NodeEdge> edges;
 };
+
+double L2SquareDistance(const Node& a, const Node& b) {
+  const double delta_x = a.x - b.x;
+  const double delta_y = a.y - b.y;
+  const double distance = delta_x * delta_x + delta_y * delta_y;
+  return distance;
+}
 
 class Graph {
  public:
@@ -71,20 +77,15 @@ class Graph {
     std::vector<NodeId> node_ids;
     if (it != nodes_.end()) {
       const auto& node = it->second;
-      for (const auto n : node.edges) {
-        node_ids.emplace_back(n.id);
+      for (const auto [node_id, cost] : node.edges) {
+        node_ids.emplace_back(node_id);
       }
     }
     return node_ids;
   }
 
-  std::optional<Node> node(NodeId id) const {
-    auto it = nodes_.find(id);
-    if (it != nodes_.end()) {
-      return std::make_optional(it->second);
-    } else {
-      return std::nullopt;
-    }
+  const Node& node(NodeId id) const {
+    return nodes_.at(id);
   }
 
 
@@ -173,8 +174,8 @@ std::optional<Graph> ParseFromFiles(
     return std::nullopt;
 
   for (const auto& [from_id, to_id, l2_cost] : *edges) {
-    nodes->at(from_id).edges.emplace_back(to_id, l2_cost);
-    nodes->at(to_id).edges.emplace_back(from_id, l2_cost);
+    nodes->at(from_id).edges.emplace(to_id, l2_cost);
+    nodes->at(to_id).edges.emplace(from_id, l2_cost);
   }
 
   return std::make_optional<Graph>(std::move(*nodes));
@@ -184,22 +185,32 @@ bool VerifyPath(const Graph& graph, const std::vector<NodeId>& path) {
   for (std::size_t i=1; i<path.size(); ++i) {
     const auto from_id = path[i-1];
     const auto to_id = path[i];
-    const auto maybe_from_node = graph.node(from_id);
-    if (!maybe_from_node.has_value())
-      return false;
-
-    const auto& edges = maybe_from_node.value().edges;
-    bool valid_edge =
-      std::find_if(
-          edges.begin(), edges.end(),
-          [to_id] (const auto& edge) {
-            return edge.id == to_id;
-          })
-      != edges.end();
+    const bool valid_edge = graph.node(from_id).edges.contains(to_id);
     if (!valid_edge)
       return false;
   }
   return true;
+}
+
+struct PathDistances {
+  double euclidean;
+  double topological;
+};
+
+PathDistances ComputePathDistances(const Graph& graph, const std::vector<NodeId>& path) {
+  const auto start = graph.node(path.front());
+  const auto goal = graph.node(path.back());
+  const double euclidean = L2SquareDistance(start, goal);
+
+  double topological = 0.0;
+  for (std::size_t i=1; i<path.size(); ++i) {
+    const auto from_id = path[i-1];
+    const auto to_id = path[i];
+    const auto& edge = graph.node(from_id).edges.at(to_id);
+    topological += edge.cannonical_l2_cost;
+  }
+
+  return PathDistances{euclidean, topological};
 }
 
 }  // namespace normalized_coordinate
