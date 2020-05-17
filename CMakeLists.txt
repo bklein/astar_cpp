@@ -1,23 +1,20 @@
 cmake_minimum_required(VERSION 3.17)
 
-project(snap_astar
+project(astar_cpp
   VERSION 0.0.1
   LANGUAGES CXX
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -Weffc++ -Wpedantic")
 
-add_library(snap_astar INTERFACE)
-target_include_directories(snap_astar INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_features(snap_astar INTERFACE cxx_std_20)
-target_compile_options(snap_astar INTERFACE -Werror -Wall -Wextra)
+add_library(astar_cpp INTERFACE)
+target_include_directories(astar_cpp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_features(astar_cpp INTERFACE cxx_std_20)
+target_compile_options(astar_cpp INTERFACE -Werror -Wall -Wextra)
 
 
-add_executable(snap_astar_demo demo.cc)
-target_link_libraries(snap_astar_demo PRIVATE snap_astar)
+add_executable(astar_snap_demo astar_snap_demo.cc)
+target_link_libraries(astar_snap_demo PRIVATE astar_cpp)
 
-add_executable(snap_astar_demo2 demo2.cc)
-target_link_libraries(snap_astar_demo2 PRIVATE snap_astar)
-
-#add_executable(heap_tests heap_tests.cc)
-#target_link_libraries(heap_tests PRIVATE heap_cpp)
+add_executable(astar_utah_demo astar_utah_demo.cc)
+target_link_libraries(astar_utah_demo PRIVATE astar_cpp)

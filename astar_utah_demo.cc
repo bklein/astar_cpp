@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "astar.hpp"
-#include "graph2.hpp"
+#include "normalized_coordinate_graph.hpp"
 #include "random_uniform_generator.hpp"
 
 using namespace bk;

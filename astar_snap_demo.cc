@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "astar.hpp"
-#include "graph.hpp"
+#include "snap_graph.hpp"
 #include "random_uniform_generator.hpp"
 
 using namespace bk;
@@ -46,18 +46,17 @@ int main(int argc, char** argv) {
     };
 
   auto h =
-    [goal] (const Node& node) -> double {
+    [] (const Node&) -> double {
       // Since the dataset does not contain true spatial information
-      // we create a fake but reasonable hueristic
-      return static_cast<double>(std::abs(node - goal));
+      // return a fake constant heuristic, making this equivilant
+      // to Dijkstra
+      return 1.0;
     };
 
   auto edge_cost =
-    [] (const Node& a, const Node& b) -> double {
+    [] (const Node&, const Node&) -> double {
       // Since the dataset does not contain edge costs
       // we will use a simple constant cost
-      (void)a;
-      (void)b;
       return 1.0;
     };
 

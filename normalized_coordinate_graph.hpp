@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <cmath>
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
@@ -9,10 +10,6 @@
 #include <vector>
 
 namespace bk {
-
-// XXX Adapt to use this instead
-// it has spatial data!
-// https://www.cs.utah.edu/~lifeifei/SpatialDataset.htm
 
 template <class T> using observer_ptr = T*;
 
@@ -200,7 +197,7 @@ struct PathDistances {
 PathDistances ComputePathDistances(const Graph& graph, const std::vector<NodeId>& path) {
   const auto start = graph.node(path.front());
   const auto goal = graph.node(path.back());
-  const double euclidean = L2SquareDistance(start, goal);
+  const double euclidean = std::sqrt(L2SquareDistance(start, goal));
 
   double topological = 0.0;
   for (std::size_t i=1; i<path.size(); ++i) {

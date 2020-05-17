@@ -10,10 +10,6 @@
 
 namespace bk {
 
-// XXX Adapt to use this instead
-// it has spatial data!
-// https://www.cs.utah.edu/~lifeifei/SpatialDataset.htm
-
 template <class T> using observer_ptr = T*;
 
 class UndirectedGraph {
