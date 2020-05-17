@@ -16,5 +16,8 @@ target_compile_options(snap_astar INTERFACE -Werror -Wall -Wextra)
 add_executable(snap_astar_demo demo.cc)
 target_link_libraries(snap_astar_demo PRIVATE snap_astar)
 
+add_executable(snap_astar_demo2 demo2.cc)
+target_link_libraries(snap_astar_demo2 PRIVATE snap_astar)
+
 #add_executable(heap_tests heap_tests.cc)
 #target_link_libraries(heap_tests PRIVATE heap_cpp)
