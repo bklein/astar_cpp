@@ -29,9 +29,14 @@ AStar(
 
   open_set.push(std::make_pair(start, 0.0));
 
+  int64_t expansions = 0;
   while (!open_set.empty()) {
     const auto [current, score] = open_set.top();
     open_set.pop();
+    ++expansions;
+    if (expansions % 10000 == 0) {
+      std::cerr << "expansions: " << expansions << "\r";
+    }
     if (current == goal) {
       std::vector<Node> path{current};
       auto next = came_from.find(current);
@@ -39,6 +44,7 @@ AStar(
         path.emplace_back(next->second);
         next = came_from.find(next->second);
       }
+      std::cerr << "expansions: " << expansions << std::endl;
       return std::make_optional(std::move(path));
     }
 

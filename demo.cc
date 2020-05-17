@@ -7,6 +7,7 @@
 #include "random_uniform_generator.hpp"
 
 using namespace bk;
+using Node = UndirectedGraph::Node;
 
 int main(int argc, char** argv) {
   if (argc != 2) {
@@ -15,7 +16,7 @@ int main(int argc, char** argv) {
   }
 
   const std::filesystem::path dataset_path(argv[1]);
-  const auto maybe_graph = LoadFromFile(dataset_path);
+  const auto maybe_graph = ParseFromFile(dataset_path);
   if (!maybe_graph.has_value()) {
     std::cerr << "Failed to parse dataset: " << dataset_path << std::endl;
     return EXIT_FAILURE;
@@ -23,13 +24,12 @@ int main(int argc, char** argv) {
 
   const auto& graph = *maybe_graph;
 
-  std::cout << "Loaded graph with " << graph.size() << " nodes" << std::endl;
+  std::cout << "Loaded graph with "
+    << graph.num_nodes() << " nodes and "
+    << graph.num_edges() << " edges"
+    << std::endl;
 
-  std::vector<Node> nodes;
-  for (const auto& [from, tos] : graph) {
-    nodes.emplace_back(from);
-  }
-
+  const auto nodes = graph.nodes();
   RandomUniformGenerator<Node> rand(0, nodes.size() - 1);
 
   const auto start = nodes.at(rand.next());
@@ -37,7 +37,12 @@ int main(int argc, char** argv) {
 
   auto neighors =
     [&graph] (const Node& a) -> std::vector<Node> {
-      return graph.at(a);
+      const auto nodes = graph.connections(a);
+      if (nodes) {
+        return *nodes;
+      } else {
+        return {};
+      }
     };
 
   auto h =

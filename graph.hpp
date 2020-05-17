@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
@@ -9,16 +10,66 @@
 
 namespace bk {
 
-using Node = int64_t;
+// XXX Adapt to use this instead
+// it has spatial data!
+// https://www.cs.utah.edu/~lifeifei/SpatialDataset.htm
 
-using UndirectedGraph = std::unordered_map<Node, std::vector<Node>>;
+template <class T> using observer_ptr = T*;
 
-std::optional<UndirectedGraph> LoadFromFile(const std::filesystem::path& filename) {
+class UndirectedGraph {
+ public:
+  using Node = int64_t;
+  explicit UndirectedGraph(std::unordered_map<Node, std::vector<Node>>&& nodes_to_edges)
+    : nodes_to_edges_(std::move(nodes_to_edges))
+    , n_edges_(0) {
+
+    for (const auto& [from, tos] : nodes_to_edges_) {
+      n_edges_ += tos.size();
+    }
+
+    // assumes balanced
+    assert(n_edges_ % 2 == 0);
+    n_edges_ /= 2;
+  }
+
+  std::size_t num_nodes() const {
+    return nodes_to_edges_.size();
+  }
+
+  std::size_t num_edges() const {
+    return n_edges_;
+  }
+
+  std::vector<Node> nodes() const {
+    std::vector<Node> nodes;
+    for (const auto& [from, tos] : nodes_to_edges_) {
+      nodes.emplace_back(from);
+    }
+    return nodes;
+  }
+
+  observer_ptr<const std::vector<Node>> connections(Node n) const {
+    auto it = nodes_to_edges_.find(n);
+    if (it == nodes_to_edges_.end()) {
+      return nullptr;
+    } else {
+      return &it->second;
+    }
+  }
+
+ private:
+  std::unordered_map<Node, std::vector<Node>> nodes_to_edges_;
+  std::size_t n_edges_;
+};
+
+std::optional<UndirectedGraph> ParseFromFile(const std::filesystem::path& filename) {
   std::ifstream ifs(filename.string());
   if (!ifs.is_open())
     return std::nullopt;
 
-  UndirectedGraph graph;
+  using Node = UndirectedGraph::Node;
+  std::unordered_map<Node, std::vector<Node>> graph;
+
   std::string line;
   int line_no = 1;
   while (std::getline(ifs, line)) {
@@ -43,19 +94,22 @@ std::optional<UndirectedGraph> LoadFromFile(const std::filesystem::path& filenam
     }
 
     graph[from_node].emplace_back(to_node);
+    graph[to_node].emplace_back(from_node);
 
     ++line_no;
   }
 
-  return std::make_optional(std::move(graph));
+  return std::make_optional<UndirectedGraph>(std::move(graph));
 }
 
-bool VerifyPath(const UndirectedGraph& graph, const std::vector<Node>& path) {
+bool VerifyPath(const UndirectedGraph& graph, const std::vector<UndirectedGraph::Node>& path) {
   for (std::size_t i=1; i<path.size(); ++i) {
     const auto from = path[i-1];
     const auto to = path[i];
-    const auto& edges = graph.at(from);
-    bool valid_edge = std::find(edges.begin(), edges.end(), to) != edges.end();
+    const auto edges = graph.connections(from);
+    if (!edges)
+      return false;
+    bool valid_edge = std::find(edges->begin(), edges->end(), to) != edges->end();
     if (!valid_edge)
       return false;
   }
