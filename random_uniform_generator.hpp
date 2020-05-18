@@ -10,8 +10,7 @@ class RandomUniformGenerator {
   static_assert(std::numeric_limits<T>::is_integer);
 
   RandomUniformGenerator(T lo, T hi)
-    : rd_()
-    , gen_(rd_())
+    : gen_(std::random_device{}())
     , dist_(lo, hi)
   {}
 
@@ -20,7 +19,6 @@ class RandomUniformGenerator {
   }
 
  private:
-  std::random_device rd_;
   std::mt19937 gen_;
   std::uniform_int_distribution<T> dist_;
 };
