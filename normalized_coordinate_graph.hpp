@@ -59,6 +59,7 @@ class Graph {
     return n_edges_;
   }
 
+  // TODO replace allocation with iterator view
   std::vector<NodeId> node_ids() const {
     std::vector<NodeId> node_ids;
     for (const auto& [id, node] : nodes_) {
@@ -67,6 +68,7 @@ class Graph {
     return node_ids;
   }
 
+  // TODO replace allocation with iterator view
   std::vector<NodeId> neighbors(NodeId id) const {
     auto it = nodes_.find(id);
     std::vector<NodeId> node_ids;
