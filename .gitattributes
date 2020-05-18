@@ -1,0 +1,7 @@
+data/cal.cedge filter=lfs diff=lfs merge=lfs -text
+data/cal.cnode filter=lfs diff=lfs merge=lfs -text
+data/NA.cedge filter=lfs diff=lfs merge=lfs -text
+data/NA.cnode filter=lfs diff=lfs merge=lfs -text
+data/roadNet-CA.txt filter=lfs diff=lfs merge=lfs -text
+data/SF.cedge filter=lfs diff=lfs merge=lfs -text
+data/SF.cnode filter=lfs diff=lfs merge=lfs -text
